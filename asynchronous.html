@@ -5,10 +5,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <title>Asynchronous JavaScript</title>
-    <p id="boras">Vädret i Borås just är:</p>
+    <style>
+      p {
+        font-size: 2rem;
+        animation-duration: 2500ms;
+        animation-name: blink;
+        animation-iteration-count: infinite;
+        animation-direction: alternate;
+        -webkit-animation: blink 1500ms infinite; /* Safari and Chrome */
+        transition: transform 1s ease-in 0s;
+      }
+      @keyframes blink {
+        from {
+          font-size: 2rem;
+          color: black;
+        }
+        to {
+          font-size: 3rem;
+          color: red;
+        }
+      }
+    </style>
   </head>
   <body>
     <h1>Asynchronous JavaScript</h1>
+    <p id="boras">Vädret i Borås just är:</p>
     <script>
       /* const second = () => {
         setTimeout(() => {
@@ -126,33 +147,36 @@
 
       getRecipesAW().then(result => console.log(`${result} is the best everr`)); */
 
-      fetch(
-        "https://opendata-download-metfcst.smhi.se/api/category/pmp3g/version/2/geotype/point/lon/12.947387/lat/57.729965/data.json"
-      )
-        .then(result => {
-          console.log(result);
-          return result.json();
-        })
-        .then(data => {
-          let lastTimeSerie = data.timeSeries[0];
+      function getWeather(city, lon, lat) {
+        fetch(
+          `https://opendata-download-metfcst.smhi.se/api/category/pmp3g/version/2/geotype/point/lon/${lon}/lat/${lat}/data.json`
+        )
+          .then(result => {
+            console.log(result);
+            return result.json();
+          })
+          .then(data => {
+            let lastTimeSerie = data.timeSeries[0];
 
-          var parametrar = lastTimeSerie["parameters"];
-          console.log(parametrar);
-          for (let y = 0; y < parametrar.length; y++) {
-            const thisParameter = parametrar[y];
-            if (thisParameter["name"] == "t") {
-              const temperature =
-                thisParameter["values"] + " " + thisParameter["unit"];
+            var parametrar = lastTimeSerie["parameters"];
+            console.log(parametrar);
+            for (let y = 0; y < parametrar.length; y++) {
+              const thisParameter = parametrar[y];
+              if (thisParameter["name"] == "t") {
+                const temperature = thisParameter["values"];
 
-              console.log(temperature);
+                console.log(temperature);
 
-              document.querySelector(
-                "#boras"
-              ).textContent = `Vädret i Borås just nu är ${temperature}`;
+                document.querySelector(
+                  "#boras"
+                ).textContent = `Vädret i ${city} just nu är ${temperature} grader`;
+              }
             }
-          }
-        })
-        .catch(err => console.log(err));
+          })
+          .catch(err => console.log(err));
+      }
+
+      getWeather("Borås", 12.947387, 57.729965);
     </script>
   </body>
 </html>
